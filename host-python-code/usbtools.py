@@ -13,6 +13,7 @@ class usbtools:
 
     def poll(self):
         c_poll = self.monitor.poll(timeout=1)
+        ret = len(self.current_devices)
 
         if c_poll != None:
             device = c_poll
@@ -20,29 +21,26 @@ class usbtools:
             c_driver = str(device.driver)
             c_name = str(device.sys_name)
 
+
             if c_action == 'add' or c_action == 'remove':
+                if len(c_name.split(':')) > 1:
+                    if c_action == 'add':
+                        if c_driver == 'usb-storage':
+                            self.notify("Device " + c_name + " Attached")
+                            self.current_devices[c_name] = device
 
-                if c_action == 'add':
-                    if c_driver == 'usb-storage':
-                        self.notify("Device " + c_name + " Attached")
-                        self.current_devices[c_name] = device
+                    elif c_action == 'remove':
+                        if c_name in self.current_devices:
+                            self.current_devices.pop(c_name)
+                            self.notify("Device " + c_name + " Removed")
 
-                        c_path = device.sys_path
+                    print('\t\t\tDevice: ', c_action, 'Devices: ', end='')
+                    for k in self.current_devices:
+                        print(k, end='  -  ')
+                    print('')
+                    ret = c_action
 
-                elif c_action == 'remove':
-                    if c_name in self.current_devices:
-                        self.current_devices.pop(c_name)
-                        self.notify("Device " + c_name + " Removed")
-                    print('USB Device ', c_action)
-
-                print('\n\n')
-                print('Current devices: ')
-                for k in self.current_devices:
-                    print(k, end='  -  ')
-
-            return 1
-        else:
-            return 0
+        return ret
 
     def notify(self, message):
         subprocess.Popen(['notify-send', message])
