@@ -4,7 +4,7 @@
 //pin definitions
 int buzzerPin = 9;
 int ledPin = 10;
-int dataPin = 18;
+int dataPin = 8;
 
 //led brightness
 int b = 100;
@@ -17,7 +17,7 @@ bool state = true;
 
 //sensor watchdog timer
 unsigned long int watchdogLast = 0;
-int watchdogDelay = 5000;
+int watchdogDelay = 8000;
 
 unsigned long hbLast = 0;
 int hbDelay = 100;
@@ -33,7 +33,9 @@ unsigned long blinkLast = 0;
 int blinkDelay = 500;
 
 //alarm timer
-bool alarm = true;
+bool alarm = false;
+bool flip = true;
+float i = 0;
 
 unsigned long alarmLast = 0;
 int alarmDelay = 500;
@@ -71,20 +73,27 @@ void loop() {
     }
 
     if (millis() - watchdogLast > watchdogDelay) {
-      // analogWrite(ledPin, b);
-      // analogWrite(buzzerPin, b);
+//       analogWrite(ledPin, b);
+
       if (state == true) {
         state = false;
-        // Serial.println("left");
+        if (usbAttached == true) {
+          alarm = true;
+          blink = true;
+        }
       }
     } else {
       if (state == false) {
         state = true;
-        // Serial.println("return");
+        alarm = false;
+        blink = false;
+
+        analogWrite(ledPin, 0);
+        analogWrite(buzzerPin, 0);
+//        Serial.println("return");
       }
-      // analogWrite(ledPin, 0);
-      // analogWrite(buzzerPin, 0);
-      // Serial.println(millis() - watchdogLast);
+//       analogWrite(ledPin, 0);
+//       Serial.println(millis() - watchdogLast);
     }
 
     if (millis() - blinkLast > blinkDelay) {
@@ -93,15 +102,19 @@ void loop() {
         if (blinkToggle == 0) { blinkToggle = 1; }
         else if (blinkToggle == 1) { blinkToggle = 0; blinkCount++; }
 
+        if (alarm == true) {
+        analogWrite(buzzerPin, blinkToggle*b);
+        } else {
         if (blinkCount > 3) {
           analogWrite(ledPin, 0);
           blink = false;
           blinkCount = 0;
           blinkToggle = 0;
         }
+        }
       }
       blinkLast = millis();
-      Serial.println(millis() - blinkLast);
+//      Serial.println(millis() - blinkLast);
     }
 
     if (millis() - alarmLast > alarmDelay) {
@@ -109,6 +122,7 @@ void loop() {
 
       }
     }
+
 
   }
 

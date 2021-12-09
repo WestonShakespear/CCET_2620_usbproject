@@ -2,7 +2,7 @@ from usbtools import usbtools
 from hubtools import hubtools
 
 looptimeout = 1
-port = '/dev/ttyACM1'
+port = '/dev/ttyACM0'
 baudrate = 115200
 
 usb = usbtools(looptimeout)
@@ -22,7 +22,13 @@ while True:
         if usb_status == 'add':
             hub.sendChar('a')
         elif usb_status == 'remove':
-            hub.sendChar('r')
-
+            c = current_num - 1
+            if c > 0:
+                hub.sendChar('r')
+            elif c == 0:
+                hub.sendChar('x')
     else:
-        pass
+        current_num = int(usb_status)
+
+    # else:
+    #     pass
